@@ -1,0 +1,22 @@
+name: Bug report
+description: Something in MDJaada or the agent did not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Agent version and how it runs
+      placeholder: e.g. 0.4.6, systemd on Ubuntu 22.04 / Docker / Kubernetes
+  - type: textarea
+    id: logs
+    attributes:
+      label: Agent logs
+      description: Output of `journalctl -u mdjaada-agent -n 100` or the container logs. Remove passwords and host names you do not want to share.
+      render: text

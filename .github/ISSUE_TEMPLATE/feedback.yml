@@ -1,0 +1,16 @@
+name: Feedback or idea
+description: Tell us what worked, what confused you, or what is missing
+labels: [feedback]
+body:
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Your feedback
+      description: What were you trying to do, and how did it go?
+    validations:
+      required: true
+  - type: input
+    id: stack
+    attributes:
+      label: What you were monitoring (optional)
+      placeholder: e.g. Postgres, Kafka, Airflow
