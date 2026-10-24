@@ -1,0 +1,24 @@
+# Let Prometheus (and Grafana on top of it) read MDJaada's node states, check numbers, incidents and agents.
+# Add this job under `scrape_configs:` in prometheus.yml. The API key is the one in the self-host .env
+# (MDJAADA_API_KEY); keep it in a file readable only by Prometheus.
+scrape_configs:
+  - job_name: mdjaada
+    scrape_interval: 30s            # the agent checks every 30 s by default; scraping faster adds nothing
+    scheme: http                    # https if you put TLS in front of the MDJaada server
+    metrics_path: /api/metrics      # self-host package (nginx). Straight to the API container: /metrics
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/mdjaada-api-key
+    static_configs:
+      - targets: ["mdjaada.internal:8080"]
+
+# Series (labels: flow, node, node_id, type):
+#   mdjaada_node_state{state="healthy|degraded|down|stale|unknown"}  1 for the current state
+#   mdjaada_node_up                     1 when the last check passed
+#   mdjaada_node_metric{metric="lag"}   every number from the last check (lag, data age, OTel rules, ...)
+#   mdjaada_node_latency_ms, mdjaada_node_check_age_seconds
+#   mdjaada_incidents_open{severity}, mdjaada_incidents_total, mdjaada_alerts_total{kind}
+#   mdjaada_agent_up{agent,version}, mdjaada_agent_last_heartbeat_age_seconds{agent}
+#
+# Example alert: a consumer group's lag in Grafana/Alertmanager
+#   max by (node) (mdjaada_node_metric{metric="lag", type="kafka_consumer_group"}) > 10000

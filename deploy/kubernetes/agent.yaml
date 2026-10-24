@@ -1,0 +1,73 @@
+# MDJaada agent inside a Kubernetes cluster.
+#  - read-only RBAC: it can list/get workloads, pods, services and events, and change nothing
+#  - checks the nodes assigned to it (config "agent": MDJAADA_AGENT_ID) and suggests Services as nodes
+#  - receives OTLP/HTTP JSON on mdjaada-agent.mdjaada:4318 for apps in the cluster
+# Before applying: set MDJAADA_API, the API key Secret, and the image you built from agent/Dockerfile.
+apiVersion: v1
+kind: Namespace
+metadata: { name: mdjaada }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: mdjaada-agent, namespace: mdjaada }
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata: { name: mdjaada-agent-read }
+rules:
+  - apiGroups: [""]
+    resources: [pods, services, events, namespaces]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets, daemonsets, replicasets]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata: { name: mdjaada-agent-read }
+roleRef: { apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: mdjaada-agent-read }
+subjects: [{ kind: ServiceAccount, name: mdjaada-agent, namespace: mdjaada }]
+---
+apiVersion: v1
+kind: Secret
+metadata: { name: mdjaada-agent, namespace: mdjaada }
+stringData:
+  MDJAADA_API_KEY: change-me
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: mdjaada-agent, namespace: mdjaada, labels: { app: mdjaada-agent } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: mdjaada-agent } }
+  template:
+    metadata: { labels: { app: mdjaada-agent } }
+    spec:
+      serviceAccountName: mdjaada-agent
+      containers:
+        - name: agent
+          image: mdjaada-agent:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - { name: MDJAADA_API, value: "https://mdjaada.example.com/api" }
+            - { name: MDJAADA_FLOW_NAME, value: "Kubernetes" }
+            - { name: MDJAADA_AGENT_ID, value: "k8s-agent" }
+            - { name: MDJAADA_ASSIGNED_ONLY, value: "true" }      # leave the other nodes to other agents
+            - { name: MDJAADA_K8S_DISCOVERY, value: "true" }
+            - { name: MDJAADA_K8S_NAMESPACES, value: "all" }      # or "shop,payments"
+            - { name: MDJAADA_INTERVAL, value: "15" }
+          envFrom: [{ secretRef: { name: mdjaada-agent } }]
+          ports: [{ name: otlp-http, containerPort: 4318 }]
+          volumeMounts: [{ name: data, mountPath: /data }]
+          resources:
+            requests: { cpu: 50m, memory: 96Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+          securityContext: { runAsNonRoot: true, runAsUser: 10001, allowPrivilegeEscalation: false, readOnlyRootFilesystem: true }
+      volumes: [{ name: data, emptyDir: {} }]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: mdjaada-agent, namespace: mdjaada }
+spec:
+  selector: { app: mdjaada-agent }
+  ports: [{ name: otlp-http, port: 4318, targetPort: otlp-http }]

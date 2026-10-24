@@ -1,0 +1,40 @@
+# OpenTelemetry Collector in front of the MDJaada agent.
+#  - accepts OTLP gRPC (4317) and HTTP protobuf/JSON (4318) from your apps
+#  - sends traces, logs and metrics to the agent as OTLP/HTTP JSON (the agent only speaks JSON)
+#  - optionally copies the same metrics to your Prometheus (remote write) or Datadog, so Grafana keeps months of
+#    history while MDJaada judges nodes on the recent window
+# Run the collector on another port than the agent's 4318 if both are on one host (e.g. agent MDJAADA_OTLP_PORT=4319).
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http: { endpoint: 0.0.0.0:4318 }
+
+processors:
+  batch: { timeout: 2s, send_batch_size: 512 }
+  # MDJaada rules only need the metrics you reference; dropping the rest keeps the agent's store small.
+  # filter/mdjaada:
+  #   metrics:
+  #     include: { match_type: regexp, metric_names: ["http\\.server\\..*", "db\\.client\\..*", "messaging\\..*"] }
+
+exporters:
+  otlphttp/mdjaada:
+    endpoint: http://mdjaada-agent:4319     # the agent's MDJAADA_OTLP_PORT
+    encoding: json
+    compression: none
+    retry_on_failure: { enabled: true, max_elapsed_time: 60s }
+  # Copy metrics to Prometheus (needs --web.enable-remote-write-receiver, or Mimir/Thanos/VictoriaMetrics):
+  # prometheusremotewrite:
+  #   endpoint: http://prometheus:9090/api/v1/write
+  # Or Datadog:
+  # datadog:
+  #   api: { key: ${env:DD_API_KEY}, site: datadoghq.com }
+
+service:
+  telemetry:
+    logs: { level: warn }
+  pipelines:
+    traces:  { receivers: [otlp], processors: [batch], exporters: [otlphttp/mdjaada] }
+    logs:    { receivers: [otlp], processors: [batch], exporters: [otlphttp/mdjaada] }
+    metrics: { receivers: [otlp], processors: [batch], exporters: [otlphttp/mdjaada] }
+    # metrics/copy: { receivers: [otlp], processors: [batch], exporters: [prometheusremotewrite] }
