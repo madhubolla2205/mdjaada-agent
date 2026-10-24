@@ -18,6 +18,23 @@ The agent's code is public so you can read exactly what runs in your environment
 **Try MDJaada:** a 14-day trial at [app.mdjaada.com](https://app.mdjaada.com), or ask for a self-hosted pilot at
 [mdjaada.com](https://mdjaada.com). The agent needs an MDJaada account (hosted or self-hosted) to report to.
 
+## Quick start (about 10 minutes)
+
+1. **Sign up** for the free 14-day trial at [app.mdjaada.com](https://app.mdjaada.com/#signup) (no card) and confirm
+   your email. Your agent key and an install command filled in for your account appear straight away.
+2. **Install the agent** on a Linux server that can reach the systems you want to watch:
+   ```bash
+   curl -fsSLO https://github.com/madhubolla2205/mdjaada-releases/releases/latest/download/install.sh
+   sudo bash install.sh --api https://app.mdjaada.com/api --agent-id dc1-agent --flow-name "My system"
+   ```
+   It asks for the agent key, so the key never lands in your shell history.
+3. **Draw your system** in MDJaada, or start from a template: add a database, a queue or an API and connect them.
+   Every part shows its status within a minute or two.
+4. **Break something on purpose**, such as stopping a test database or pausing a consumer. MDJaada opens one incident,
+   marks the likely cause and shows the evidence.
+
+Prefer to watch first? The [3-minute walkthrough](https://mdjaada.com/#videos) goes from sign-up to the first incident.
+
 ## What stays in your network
 
 - **Telemetry stays with the agent.** Spans, logs and OTel metric points are stored on the agent host
@@ -98,6 +115,13 @@ pytest -q agent/tests
 ```
 
 Issues and pull requests are welcome.
+
+## Feedback
+
+MDJaada is new, and feedback from people trying it on real systems is the most useful thing you can give. Open an
+[issue](https://github.com/madhubolla2205/mdjaada-agent/issues/new/choose) for bugs and ideas, or email
+[hello@mdjaada.com](mailto:hello@mdjaada.com?subject=MDJaada%20feedback) for anything about the web app, your account
+or a self-hosted pilot.
 
 ## Licence
 
