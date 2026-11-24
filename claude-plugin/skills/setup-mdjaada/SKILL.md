@@ -30,9 +30,9 @@ The agent key lets a server report to the user's account. Treat it as a password
 ## 1. Ask the user (one short message)
 
 1. **Hosted or self-hosted MDJaada?**
-   - Hosted: API URL is `https://app.mdjaada.com/api`. No account yet: sign up for the 14-day trial at
-     https://app.mdjaada.com/#signup (no card) and confirm the email. After the trial the Free plan keeps up to 10
-     nodes and 1 agent running; pricing is at https://mdjaada.com/#pricing.
+   - Hosted: API URL is `https://app.mdjaada.com/api`. No account yet: sign up for a free account at
+     https://app.mdjaada.com/#signup (no card) and confirm the email. The Free plan covers up to 10 nodes and 1 agent;
+     pricing is at https://mdjaada.com/#pricing.
    - Self-hosted: API URL is `<PUBLIC_URL>/api` of their MDJaada server, as the agent will reach it.
 2. **Where should the agent run?** It must be able to reach the systems they want watched (databases, Kafka,
    queues, APIs) and the MDJaada API. Pick the path:
