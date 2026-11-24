@@ -15,14 +15,13 @@ The agent's code is public so you can read exactly what runs in your environment
 |---|---|
 | ![Canvas](docs/images/canvas-light.jpg) | ![Incident](docs/images/incident-light.jpg) |
 
-**Try MDJaada:** a 14-day trial at [app.mdjaada.com](https://app.mdjaada.com), then free for good for up to 10 nodes
-and 1 agent; larger systems pay per node per day with no per-user fees ([pricing](https://mdjaada.com/#pricing)). Or ask
+**Try MDJaada:** free for good at [app.mdjaada.com](https://app.mdjaada.com) for up to 10 nodes and 1 agent; larger systems pay per node per day with no per-user fees ([pricing](https://mdjaada.com/#pricing)). Or ask
 for a self-hosted pilot at [mdjaada.com](https://mdjaada.com). The agent needs an MDJaada account (hosted or
 self-hosted) to report to.
 
 ## Quick start (about 10 minutes)
 
-1. **Sign up** for the free 14-day trial at [app.mdjaada.com](https://app.mdjaada.com/#signup) (no card) and confirm
+1. **Sign up** for a free account at [app.mdjaada.com](https://app.mdjaada.com/#signup) (no card) and confirm
    your email. Your agent key and an install command filled in for your account appear straight away.
 2. **Install the agent** on a Linux server that can reach the systems you want to watch:
    ```bash
