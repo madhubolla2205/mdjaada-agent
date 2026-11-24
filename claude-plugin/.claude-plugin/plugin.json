@@ -1,0 +1,10 @@
+{
+  "name": "mdjaada",
+  "version": "0.1.0",
+  "description": "Install the MDJaada agent on a Linux server, Kubernetes cluster or Docker host and connect it to MDJaada for flow monitoring.",
+  "author": { "name": "madhubolla", "url": "https://github.com/madhubolla2205" },
+  "homepage": "https://mdjaada.com",
+  "repository": "https://github.com/madhubolla2205/mdjaada-agent",
+  "license": "Apache-2.0",
+  "keywords": ["monitoring", "observability", "opentelemetry", "kubernetes", "mdjaada"]
+}
