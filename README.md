@@ -35,6 +35,21 @@ The agent's code is public so you can read exactly what runs in your environment
 
 Prefer to watch first? The [3-minute walkthrough](https://mdjaada.com/#videos) goes from sign-up to the first incident.
 
+## Set up with Claude Code
+
+If you use [Claude Code](https://claude.com/claude-code), it can install and connect the agent for you. Add this
+repository as a plugin marketplace and install the `mdjaada` plugin:
+
+```
+/plugin marketplace add madhubolla2205/mdjaada-agent
+/plugin install mdjaada@mdjaada
+```
+
+Then ask Claude to "set up MDJaada monitoring". It asks whether you use app.mdjaada.com or a self-hosted MDJaada and
+where the agent should run (a Linux server, a Kubernetes cluster, Docker, or from source), checks the machine, and
+prepares the install. Claude never asks for your agent key: the steps that need it run in your own terminal, where you
+type it into a hidden prompt. The skill is in [claude-plugin/skills/setup-mdjaada](claude-plugin/skills/setup-mdjaada/SKILL.md).
+
 ## What stays in your network
 
 - **Telemetry stays with the agent.** Spans, logs and OTel metric points are stored on the agent host
