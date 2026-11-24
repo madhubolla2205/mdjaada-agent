@@ -1,0 +1,68 @@
+name: Agent image
+
+# Builds the agent's Docker image (amd64 + arm64) and publishes it to
+# ghcr.io/madhubolla2205/mdjaada-agent:  <version>, latest, and <version>-full / full with the AWS, Google Cloud,
+# Azure and Snowflake SDKs. The version comes from agent/mdjaada_agent/__init__.py. Pull requests build only.
+on:
+  push:
+    branches: [main]
+    paths: [agent/**, .github/workflows/image.yml]
+  pull_request:
+    paths: [agent/**, .github/workflows/image.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: Image (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: [default, full]
+    env:
+      IMAGE: ghcr.io/madhubolla2205/mdjaada-agent
+      PUBLISH: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version and tags
+        id: meta
+        run: |
+          v=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' agent/mdjaada_agent/__init__.py)
+          [ -n "$v" ] || { echo "version not found in agent/mdjaada_agent/__init__.py"; exit 1; }
+          if [ "${{ matrix.variant }}" = full ]; then
+            echo "tags=$IMAGE:$v-full,$IMAGE:full" >> "$GITHUB_OUTPUT"
+            { echo "args<<EOF"; printf 'WITH_AWS=true\nWITH_GCP=true\nWITH_AZURE=true\nWITH_SNOWFLAKE=true\n'; echo EOF; } >> "$GITHUB_OUTPUT"
+          else
+            echo "tags=$IMAGE:$v,$IMAGE:latest" >> "$GITHUB_OUTPUT"
+            echo "args=" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - if: env.PUBLISH == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: agent
+          platforms: linux/amd64,linux/arm64
+          build-args: ${{ steps.meta.outputs.args }}
+          push: ${{ env.PUBLISH == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/madhubolla2205/mdjaada-agent
+            org.opencontainers.image.title=MDJaada agent
+            org.opencontainers.image.description=MDJaada agent: checks your systems and receives OpenTelemetry inside your network
+            org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.url=https://mdjaada.com
