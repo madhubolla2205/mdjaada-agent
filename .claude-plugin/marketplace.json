@@ -1,0 +1,15 @@
+{
+  "name": "mdjaada",
+  "owner": { "name": "madhubolla", "url": "https://github.com/madhubolla2205" },
+  "metadata": {
+    "description": "Claude Code plugins for MDJaada, flow observability for data and service pipelines."
+  },
+  "plugins": [
+    {
+      "name": "mdjaada",
+      "source": "./claude-plugin",
+      "description": "Set up MDJaada monitoring: install the agent and connect it to app.mdjaada.com or a self-hosted MDJaada.",
+      "category": "monitoring"
+    }
+  ]
+}
