@@ -15,8 +15,10 @@ The agent's code is public so you can read exactly what runs in your environment
 |---|---|
 | ![Canvas](docs/images/canvas-light.jpg) | ![Incident](docs/images/incident-light.jpg) |
 
-**Try MDJaada:** a 14-day trial at [app.mdjaada.com](https://app.mdjaada.com), or ask for a self-hosted pilot at
-[mdjaada.com](https://mdjaada.com). The agent needs an MDJaada account (hosted or self-hosted) to report to.
+**Try MDJaada:** a 14-day trial at [app.mdjaada.com](https://app.mdjaada.com), then free for good for up to 10 nodes
+and 1 agent; larger systems pay per node per day with no per-user fees ([pricing](https://mdjaada.com/#pricing)). Or ask
+for a self-hosted pilot at [mdjaada.com](https://mdjaada.com). The agent needs an MDJaada account (hosted or
+self-hosted) to report to.
 
 ## Quick start (about 10 minutes)
 
