@@ -1,4 +1,4 @@
-__version__ = "0.4.6"
+__version__ = "0.4.7"
 
 # Sent with every HTTP request the agent makes. Some firewalls and CDNs (Cloudflare's bot protection among
 # them) block Python's default "Python-urllib/x.y" with a 403, which made the agent unable to reach
