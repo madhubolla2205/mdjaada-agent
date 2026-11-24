@@ -107,14 +107,19 @@ Where things are: `/etc/mdjaada-agent/agent.env` (connection), `/etc/mdjaada-age
 
 ## 3B. Kubernetes cluster
 
-Needs `kubectl` pointing at the right cluster (confirm `kubectl config current-context` with the user) and
-`docker` to build the image. There is no public agent image, so build it from the repo:
+Needs `kubectl` pointing at the right cluster (confirm `kubectl config current-context` with the user).
+
+**Image:** use the published image `ghcr.io/madhubolla2205/mdjaada-agent:<version>` (amd64 and arm64; pin a
+version rather than `latest`; `<version>-full` adds the AWS, Google Cloud, Azure and Snowflake SDKs). Find the
+current version on https://github.com/madhubolla2205/mdjaada-agent/pkgs/container/mdjaada-agent. Clusters without
+internet access: copy it into the user's own registry, or build it from the repo
+(`docker build -t <registry>/mdjaada-agent:<version> agent`, then push; for minikube/kind,
+`minikube image load` / `kind load docker-image`).
+
+Get the manifest:
 
 ```bash
-git clone https://github.com/madhubolla2205/mdjaada-agent.git && cd mdjaada-agent
-docker build -t mdjaada-agent:local agent
-# local clusters:   minikube image load mdjaada-agent:local    or    kind load docker-image mdjaada-agent:local
-# other clusters:   tag and push to the user's registry, and use that image name in the sed below
+curl -fsSLO https://raw.githubusercontent.com/madhubolla2205/mdjaada-agent/main/deploy/kubernetes/agent.yaml
 ```
 
 Apply the manifest with the user's settings. The Secret is applied with the placeholder `change-me`; the user
@@ -125,8 +130,8 @@ agent to check all parts, add `-e '/MDJAADA_ASSIGNED_ONLY/d'` to the `sed`:
 sed -e 's#https://mdjaada.example.com/api#<API_URL>#' \
     -e 's#value: "Kubernetes"#value: "<FLOW_NAME>"#' \
     -e 's#value: "k8s-agent" }#value: "<AGENT_ID>" }#' \
-    -e 's#image: mdjaada-agent:local#image: <IMAGE>#' \
-    deploy/kubernetes/agent.yaml | kubectl apply -f -
+    -e 's#image: mdjaada-agent:local#image: ghcr.io/madhubolla2205/mdjaada-agent:<VERSION>#' \
+    agent.yaml | kubectl apply -f -
 ```
 
 `MDJAADA_K8S_NAMESPACES` is `all` in the manifest; change it to a comma list (for example `shop,payments`) if the
@@ -149,19 +154,20 @@ kubectl -n mdjaada rollout status deploy/mdjaada-agent
 kubectl -n mdjaada logs deploy/mdjaada-agent --tail=50
 ```
 
-Warn the user: re-applying the unmodified `agent.yaml` later resets the Secret to `change-me`. Re-run the secret
+Warn the user: re-applying `agent.yaml` with its placeholder Secret later resets the Secret to `change-me`. Re-run the secret
 command after any re-apply, or remove the Secret document from the manifest they keep.
 
 Apps in the cluster send telemetry to `http://mdjaada-agent.mdjaada:4318`.
 
 ## 3C. Docker (no systemd)
 
-Build the image from the repo (add `--build-arg WITH_AWS=true`, `WITH_GCP`, `WITH_AZURE` or `WITH_SNOWFLAKE` for
-those connectors):
+Use the published image `ghcr.io/madhubolla2205/mdjaada-agent` (amd64 and arm64). Tags: `<version>` and
+`latest`; `<version>-full` and `full` add the AWS, Google Cloud, Azure and Snowflake SDKs. Pin a version for
+anything long-running. Without registry access, build it instead:
+`docker build -t mdjaada-agent:local agent` from a clone of the repo (`--build-arg WITH_AWS=true` etc. for the SDKs).
 
 ```bash
-git clone https://github.com/madhubolla2205/mdjaada-agent.git && cd mdjaada-agent
-docker build -t mdjaada-agent:local agent
+docker pull ghcr.io/madhubolla2205/mdjaada-agent:latest
 ```
 
 The user runs this **in their own terminal**. `-e MDJAADA_API_KEY` with no value passes the key from the shell
@@ -173,7 +179,7 @@ docker run -d --name mdjaada-agent --restart unless-stopped \
   -e MDJAADA_API=<API_URL> -e MDJAADA_API_KEY \
   -e MDJAADA_AGENT_ID=<AGENT_ID> -e MDJAADA_FLOW_NAME="<FLOW_NAME>" \
   -e MDJAADA_ASSIGNED_ONLY=true \
-  -p 4318:4318 -v mdjaada-agent-data:/data mdjaada-agent:local
+  -p 4318:4318 -v mdjaada-agent-data:/data ghcr.io/madhubolla2205/mdjaada-agent:latest
 unset MDJAADA_API_KEY
 ```
 

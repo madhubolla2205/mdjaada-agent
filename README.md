@@ -71,12 +71,22 @@ curl -fsSLO https://github.com/madhubolla2205/mdjaada-releases/releases/latest/d
 sudo bash install.sh --api https://app.mdjaada.com/api --agent-id dc1-agent --assigned-only
 ```
 
-**Docker:** `docker run -e MDJAADA_API=... -e MDJAADA_API_KEY=... -p 4318:4318 madhubolla/mdjaada:agent-<version>`,
-or build your own with `docker build agent` (add `--build-arg WITH_AWS=true`, `WITH_GCP`, `WITH_AZURE`,
-`WITH_SNOWFLAKE` for the cloud connectors).
+**Docker:** images for amd64 and arm64 are on GitHub Container Registry:
+
+```bash
+docker run -d --name mdjaada-agent --restart unless-stopped \
+  -e MDJAADA_API=https://app.mdjaada.com/api -e MDJAADA_API_KEY -e MDJAADA_AGENT_ID=dc1-agent \
+  -e MDJAADA_FLOW_NAME="My system" -p 4318:4318 -v mdjaada-agent-data:/data \
+  ghcr.io/madhubolla2205/mdjaada-agent:latest
+```
+
+`-e MDJAADA_API_KEY` with no value passes the key from your shell (`read -rs MDJAADA_API_KEY; export MDJAADA_API_KEY`)
+so it stays off the command line. Tags: `<version>` and `latest`, plus `<version>-full` and `full` with the AWS,
+Google Cloud, Azure and Snowflake SDKs. Or build your own with `docker build agent` (add `--build-arg
+WITH_AWS=true`, `WITH_GCP`, `WITH_AZURE`, `WITH_SNOWFLAKE` for the cloud connectors).
 
 **Kubernetes:** [deploy/kubernetes/agent.yaml](deploy/kubernetes/agent.yaml) (read-only RBAC, non-root, read-only
-filesystem).
+filesystem). Set its `image:` to `ghcr.io/madhubolla2205/mdjaada-agent:<version>` or your own build.
 
 **From source:** Python 3.10+, standard library only for the core: `python agent/agent.py`. Database drivers are
 optional (`psycopg`, `PyMySQL`, `pymongo`, `confluent-kafka`, `PyYAML`). Systemd details are in
